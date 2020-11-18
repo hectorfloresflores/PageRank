@@ -11,10 +11,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Scanner;
 
-import static com.utils.PageRankUtils.CREATE_GRAPH;
-import static com.utils.PageRankUtils.STREAM_ORDERBY;
-import static com.utils.PageRankUtils.loadGraph;
-import static com.utils.PageRankUtils.showMenuandGetConnection;
+import static com.utils.PageRankUtils.*;
 
 
 public class Pagerank
@@ -23,7 +20,9 @@ public class Pagerank
     public enum State {
         MENU,
         LOAD_GRAPH,
+        GRAPH_ESTIMATE,
         CONNECT_DATABASE,
+        ORDERBY,
         EXIT
     }
 
@@ -68,35 +67,55 @@ public class Pagerank
                 case LOAD_GRAPH:
                     loadGraph();
                     try (Statement stmt = conn.createStatement()) {
-                        ResultSet rs = stmt.executeQuery(CREATE_GRAPH);
+                        ResultSet rs = stmt.executeQuery(CLEAN_GRAPH);
+                        stmt.executeQuery(GRAPH_DELETE);
+                        stmt.executeQuery(CREATE_GRAPH);
+                        stmt.executeQuery(GRAPH_PROJECTION);
                         printQuery(rs);
                     } catch (SQLException e) {
                         System.out.println(e);
                     }
                     System.out.println("Grafo cargado exitosamente...");
-                    state = State.LOAD_GRAPH;
+                    state = State.GRAPH_ESTIMATE;
                     break;
-                case EXIT:
-                    showMenuandGetConnection();
+                case GRAPH_ESTIMATE:
+                    estimateGraph();
+                    try (Statement stmt = conn.createStatement()) {
+                        ResultSet rs = stmt.executeQuery(GRAPH_ESTIMATE);
+                        printQuery(rs);
+                    } catch (SQLException e) {
+                        System.out.println(e);
+                    }
+                    System.out.println("Estimacion exitosa...");
+                    state = State.ORDERBY;
+                    break;
+
+                case ORDERBY:
+                    streamGraph();
+                    try (Statement stmt = conn.createStatement()) {
+                        ResultSet rs = stmt.executeQuery(STREAM_ORDERBY);
+                        printQuery(rs);
+                    } catch (SQLException e) {
+                        System.out.println(e);
+                    }
+                    System.out.println("Algoritmo de ranking aplicado correctamente...");
+                    state = State.EXIT;
+                    break;
+
+                default:
+                    state = State.EXIT;
                     break;
 
             }
         }
 
-        try (Connection con = DriverManager.getConnection("jdbc:neo4j:bolt://localhost", "neo4j", "Intel3142!")) {
+        System.out.println("Felicidades has cumplido con los siguientes entregables:");
+        System.out.println("[-] Conectarte a tu base de datos NEO4J");
+        System.out.println("[-] Crear tu grafo en la base de datos NEO4J");
+        System.out.println("[-] Obtener una estimacion de recursos del algoritmo NEO4J");
+        System.out.println("[-] Obtener un ranking de paginas con el algoritmo de NEO4J");
 
-            try (Statement stmt = con.createStatement()) {
-                ResultSet rs = stmt.executeQuery(STREAM_ORDERBY);
-                printQuery(rs);
-            } catch (SQLException e) {
-                System.out.println(e);
-            }
-            while(true) {
-
-            }
-
-
-        }
+        conn.close();
 
 
     }

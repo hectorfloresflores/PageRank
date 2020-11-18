@@ -9,6 +9,9 @@ import java.sql.SQLException;
 
 public class PageRankUtils {
 
+    public static final String CLEAN_GRAPH = "MATCH (n)\n" +
+            "DETACH DELETE n";
+
     public static final String CREATE_GRAPH = "CREATE\n" +
             "  (home:Page {name:'Home'}),\n" +
             "  (about:Page {name:'About'}),\n" +
@@ -43,6 +46,9 @@ public class PageRankUtils {
             "  }\n" +
             ")";
 
+    public static final String GRAPH_DELETE = "CALL gds.graph.drop" +
+            "('myGraph') YIELD graphName;";
+
     public static final String GRAPH_ESTIMATE = "CALL gds.pageRank.write." +
             "estimate('myGraph', {\n" +
             "  writeProperty: 'pageRank',\n" +
@@ -75,6 +81,16 @@ public class PageRankUtils {
 
     public static void loadGraph() {
         System.out.println("Presiona ENTER para cargar el grafo:");
+        Pagerank.getInput().nextLine();
+    }
+
+    public static void estimateGraph() {
+        System.out.println("Presiona ENTER para obtener una estimación del grafo:");
+        Pagerank.getInput().nextLine();
+    }
+
+    public static void streamGraph() {
+        System.out.println("Presiona ENTER para obtener el ranking de paginas del grafo:");
         Pagerank.getInput().nextLine();
     }
 
